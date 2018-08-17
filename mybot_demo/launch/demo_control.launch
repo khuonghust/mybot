@@ -1,0 +1,22 @@
+<launch>
+	<!-- diff_drive_controller -->
+	<include file="$(find mybot_diffdrive)/launch/diffdrive_control.launch"/>
+
+<!-- START setup hardware -->
+	<!-- encoder -->
+	<node name="mybot_encoder_pub_node" pkg="mybot_hardware" type ="encoder_pub.py" output = "screen"/>
+	<!-- control motor -->
+	<node name="mybot_control_motor_node" pkg="mybot_hardware" type ="control_motor.py" output = "screen"/>
+<!-- END setup hardware -->
+
+<!-- START mybot_odometry_encoder -->
+	<node name="mybot_wheel_encoder_publisher" pkg ="mybot_odometry_encoder" type= "wheel_encoder_publisher.py" output="screen"/>
+<!-- 		<remap from="/encoder_pub_node/wheel_enc" to="/"/>
+	</node> -->
+	<node name="mybot_odom_publisher" pkg="mybot_odometry_encoder" type = "odom_publisher.py" output = "screen"/>
+<!-- END mybot_odometry_encoder -->
+
+	<!--- mybot_controller -->
+<!-- 	<node name="mybot_controller" pkg="mybot_control" type="mybot_controller.py"
+	output="screen"/> -->
+</launch>

@@ -8,6 +8,8 @@ project(mybot_control)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  dynamic_reconfigure
+  roscpp
   rospy
 )
 
@@ -86,10 +88,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/Param.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -103,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES mybot_control
-#  CATKIN_DEPENDS rospy
+#  CATKIN_DEPENDS dynamic_reconfigure roscpp rospy
 #  DEPENDS system_lib
 )
 
@@ -195,3 +196,8 @@ include_directories(
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+
+
+add_executable(mybot_control_server scripts/mybot_param.py)
+add_dependencies(mybot_control_server ${PROJECT_NAME}_gencfg)
+set_target_properties(mybot_control_server PROPERTIES LINKER_LANGUAGE CMAKE_py_LINK_EXECUTABLE)
