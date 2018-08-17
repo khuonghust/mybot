@@ -6,7 +6,7 @@
 	<!-- encoder -->
 	<node name="mybot_encoder_pub_node" pkg="mybot_hardware" type ="encoder_pub.py" output = "screen"/>
 	<!-- control motor -->
-	<node name="mybot_control_motor_node" pkg="mybot_hardware" type ="control_motor.py" output = "screen"/>
+	<node name="mybot_control_motor_node" pkg="mybot_hardwar" type ="control_motor.py" output = "screen"/>
 <!-- END setup hardware -->
 
 <!-- START mybot_odometry_encoder -->
