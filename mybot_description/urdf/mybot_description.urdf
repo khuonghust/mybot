@@ -1,0 +1,67 @@
+<robot
+  name="mybot_description">
+
+ <link name="base_footprint">
+    <inertial>
+      <mass value="0.0001" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0"
+          iyy="0.0001" iyz="0.0"
+          izz="0.0001" />
+    </inertial>
+      <visual>
+      <geometry>
+              <box size="0.001 0.001 0.001"/>
+          </geometry>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      </visual>
+  </link>
+
+  <joint name="base_footprint_joint" type="fixed">
+    <origin xyz="0 0 0" />
+    <parent link="base_footprint" />
+    <child link="base_link" />
+  </joint>
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.013792 0.00020898 0.014694"
+        rpy="0 0 0" />
+      <mass
+        value="2.7767" />
+      <inertia
+        ixx="0.031532"
+        ixy="-6.631E-05"
+        ixz="-0.0025124"
+        iyy="0.039303"
+        iyz="1.345E-05"
+        izz="0.052357" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mybot_description/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://mybot_description/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+
+</robot>

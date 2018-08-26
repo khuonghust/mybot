@@ -3,10 +3,10 @@
 	<include file="$(find mybot_diffdrive)/launch/diffdrive_control.launch"/>
 
 <!-- START setup hardware -->
-	<!-- encoder -->
-	<node name="mybot_encoder_pub_node" pkg="mybot_hardware" type ="encoder_pub.py" output = "screen"/>
-	<!-- control motor -->
-	<node name="mybot_control_motor_node" pkg="mybot_hardwar" type ="control_motor.py" output = "screen"/>
+	<!--&lt;!&ndash; encoder &ndash;&gt;-->
+	<!--<node name="mybothoư _encoder_pub_node" pkg="mybot_hardware" type ="encoder_pub.py" output = "screen"/>-->
+	<!--&lt;!&ndash; control motor &ndash;&gt;-->
+	<!--<node name="mybot_control_motor_node" pkg="mybot_hardware" type ="control_motor.py" output = "screen"/>-->
 <!-- END setup hardware -->
 
 <!-- START mybot_odometry_encoder -->
@@ -17,6 +17,6 @@
 <!-- END mybot_odometry_encoder -->
 
 	<!--- mybot_controller -->
-<!-- 	<node name="mybot_controller" pkg="mybot_control" type="mybot_controller.py"
-	output="screen"/> -->
+ 	<node name="mybot_controller" pkg="mybot_control" type="mybot_controller.py"
+	output="screen"/>
 </launch>
