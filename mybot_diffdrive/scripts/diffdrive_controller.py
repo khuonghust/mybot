@@ -12,8 +12,10 @@ class CmdVelToDiffDriveMotors:
 		self.cmdvel_sub = rospy.Subscriber('cmd_vel', Twist, self.twistCallback)
 		self.lwheel_tangent_vel_target_pub = rospy.Publisher('lwheel_tangent_vel_target', Float32, queue_size=10)
 		self.rwheel_tangent_vel_target_pub = rospy.Publisher('rwheel_tangent_vel_target', Float32, queue_size=10)
-		
+		self.lwheel_angular_vel_target_pub = rospy.Publisher('lwheel_angular_vel_target', Float32, queue_size=10)
+		self.rwheel_angular_vel_target_pub = rospy.Publisher('rwheel_angular_vel_target', Float32, queue_size=10)
 		self.wheel_separation = float(rospy.get_param('~wheel_separation'))
+		self.wheel_radius = float(rospy.get_param('~wheel_radius', 0.1))
 		self.max_motor_speed = float(rospy.get_param('~max_motor_speed')) #m/s
 
 		self.rate = float(rospy.get_param('~rate', 50.0))
@@ -38,11 +40,16 @@ class CmdVelToDiffDriveMotors:
 			rate.sleep()
 		rospy.spin();
 
+	def tangent_to_angular(self, tangent):
+		return tangent/self.wheel_radius
+
 	def shutdown(self):
 		rospy.loginfo("Stop diffdrive_controller")
 		# Stop message
 		self.lwheel_tangent_vel_target_pub.publish(0)
 		self.rwheel_tangent_vel_target_pub.publish(0)
+		self.lwheel_angular_vel_target_pub.publish(0)
+		self.rwheel_angular_vel_target_pub.publish(0)
 		rospy.sleep(0.5) 
 
 	def update(self):
@@ -64,6 +71,8 @@ class CmdVelToDiffDriveMotors:
 
 		self.rwheel_tangent_vel_target_pub.publish(vr)
 		self.lwheel_tangent_vel_target_pub.publish(vl)
+		self.lwheel_angular_vel_target_pub.publish(self.tangent_to_angular(vl))
+		self.rwheel_angular_vel_target_pub.publish(self.tangent_to_angular(vr))
 
 	def twistCallback(self,msg):
 		self.target_v = msg.linear.x;

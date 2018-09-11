@@ -2,7 +2,7 @@
 import rospy
 from math import pi
 # import numpy
-from std_msgs.msg import Float32,Int32MultiArray
+from std_msgs.msg import Float32,Int32
 
 class WheelEncoderPublisher(object):
 	"""docstring for WheelEncoderPublisher"""
@@ -10,7 +10,8 @@ class WheelEncoderPublisher(object):
 		super(WheelEncoderPublisher, self).__init__()
 		rospy.init_node('mybot_wheel_encoder_publisher')
 		# Read in tangential velocity targets
-		self.wheel_enc_sub = rospy.Subscriber('wheel_enc', Int32MultiArray, self.wheel_enc_sub_callback)
+		self.lwheel_enc_sub = rospy.Subscriber('lwheel_enc', Int32, self.lwheel_enc_sub_callback)
+		self.rwheel_enc_sub = rospy.Subscriber('rwheel_enc', Int32, self.rwheel_enc_sub_callback)
 		self.lwheel_angular_vel_enc_pub = rospy.Publisher('lwheel_angular_vel_enc', Float32, queue_size=10)
 		self.rwheel_angular_vel_enc_pub = rospy.Publisher('rwheel_angular_vel_enc', Float32, queue_size=10)
 		self.lwheel_tangent_vel_enc_pub = rospy.Publisher('lwheel_tangent_vel_enc', Float32, queue_size=10)
@@ -21,17 +22,23 @@ class WheelEncoderPublisher(object):
 		self.timeout = float(rospy.get_param('~timeout', 1))
 		self.time_prev_update = rospy.Time.now()
 
-		self.R = rospy.get_param('~robot_wheel_radius', 0.1)
+		self.R = rospy.get_param('~wheel_radius', 0.1)
 		self.res_encoder = rospy.get_param('~res_encoder', 13)
 
 		# Need a little hack to incorporate direction wheels are spinning
-		self.lwheel_dir = 1;
-		self.rwheel_dir = 1;
+		self.lwheel_dir = 1
+		self.rwheel_dir = 1
 
-		self.wheel_enc = [0,0,0,0]
+		self.lwheel_enc = 0
+		self.pre_lwheel_enc = 0
+		self.rwheel_enc = 0
+		self.pre_rwheel_enc = 0
 
-	def wheel_enc_sub_callback(self, msg):
-		self.wheel_enc = msg.data
+	def lwheel_enc_sub_callback(self, msg):
+		self.lwheel_enc = msg.data
+
+	def rwheel_enc_sub_callback(self, msg):
+		self.rwheel_enc = msg.data
 
 	def angular_to_tangent(self, angular):
 		return angular*self.R
@@ -46,19 +53,23 @@ class WheelEncoderPublisher(object):
 		dt = (time_curr_update - self.time_prev_update).to_sec()
 
 		#Compute angular velocity in rad/s
-		lwheel_enc_delta = self.wheel_enc[0] - self.wheel_enc[1]
-		rwheel_enc_delta = self.wheel_enc[2] - self.wheel_enc[3]
+		lwheel_enc_delta = self.lwheel_enc - self.pre_lwheel_enc
+		rwheel_enc_delta = self.rwheel_enc - self.pre_rwheel_enc
 		lwheel_angular_vel_enc = self.enc_2_rads(lwheel_enc_delta) / dt
 		rwheel_angular_vel_enc = self.enc_2_rads(rwheel_enc_delta) / dt
 		#print(dt)qw	
 		#Update time
 		self.time_prev_update = time_curr_update
 
+
 		#Publish data
 		self.lwheel_angular_vel_enc_pub.publish(lwheel_angular_vel_enc)
 		self.rwheel_angular_vel_enc_pub.publish(rwheel_angular_vel_enc)
 		self.lwheel_tangent_vel_enc_pub.publish(self.angular_to_tangent(lwheel_angular_vel_enc))
 		self.rwheel_tangent_vel_enc_pub.publish(self.angular_to_tangent(rwheel_angular_vel_enc))
+
+		self.pre_lwheel_enc = self.lwheel_enc
+		self.pre_rwheel_enc = self.rwheel_enc
 
 
 	def spin(self):

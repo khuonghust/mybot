@@ -7,8 +7,8 @@
 	<!-- diff_drive_controller -->
 	<node name="mybot_diffdrive_controller" pkg="mybot_diffdrive" type="diffdrive_controller.py"
 	output="screen">
-	<param name="~wheel_separation" value="0.3"/>
-	<param name="~wheel_radius" value="0.065"/>
+	<param name="~wheel_separation" value="0.32"/>
+	<param name="~wheel_radius" value="0.1"/>
 	<param name="~rate" value="50"/>
 	<param name="~max_motor_speed" value="80"/>
 	</node>

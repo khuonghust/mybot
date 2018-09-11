@@ -2,7 +2,11 @@
 <robot name="mybot" xmlns:xacro="http://www.ros.org/wiki/xacro">
     <xacro:property name="cameraSize" value="0.05"/>
     <xacro:property name="cameraMass" value="0.1"/>
-
+    <xacro:include filename="$(find mybot_description)/urdf/mybot.gazebo" />
+    <!--<xacro:include filename="$(find mybot_description)/urdf/_d435.urdf.xacro"/>-->
+     <!--<sensor_d435 parent="base_footprint">-->
+        <!--<origin xyz="0 0 0" rpy="0 0 0"/>-->
+      <!--</sensor_d435>-->
     <!--base_footprint-->
     <link name="base_footprint">
         <inertial>
@@ -61,6 +65,9 @@
             <geometry>
                 <mesh filename="package://mybot_description/meshes/wheel.STL"/>
             </geometry>
+            <material name="black">
+                <color rgba="0.0 0.0 0.0 1"/>
+            </material>
         </visual>
         <inertial>
             <origin xyz="0 0 0" rpy="0 1.5707 1.5707"/>
@@ -85,6 +92,9 @@
             <geometry>
                 <mesh filename="package://mybot_description/meshes/wheel.STL"/>
             </geometry>
+            <material name="black">
+                <color rgba="0.0 0.0 0.0 1"/>
+            </material>
         </visual>
         <inertial>
             <origin xyz="0 0 0" rpy="0 1.5707 1.5707"/>
@@ -96,12 +106,15 @@
         </inertial>
     </link>
 
+      
+
     <!--joints-->
     <joint name="base_footprint_joint" type="fixed">
         <origin xyz="0 0 0"/>
         <parent link="base_footprint"/>
         <child link="base_link"/>
     </joint>
+
 
     <joint type="continuous" name="left_wheel_joint">
         <origin xyz="-0.12402 0.15902 -0.06636" rpy="0 0 0"/>

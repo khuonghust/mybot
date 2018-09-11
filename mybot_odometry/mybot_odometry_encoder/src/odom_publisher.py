@@ -1,11 +1,8 @@
 #!/usr/bin/python
 import rospy
-import roslib
 import math
 import numpy
 import tf
-
-# Messages
 from std_msgs.msg import Float32
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import Point, Quaternion, Twist
@@ -19,17 +16,15 @@ class OdomPublisher(object):
 		self.rwheel_angular_vel_enc_sub = rospy.Subscriber('rwheel_angular_vel_enc', Float32, self.rwheel_angular_vel_enc_callback)
 		self.cmd_vel_enc_pub = rospy.Publisher('cmd_vel_enc', Twist, queue_size=10)
 		self.odom_pub = rospy.Publisher('odom', Odometry, queue_size=10)
-		self.R = rospy.get_param('~robot_wheel_radius', 0.1)
-		self.L = rospy.get_param('~robot_wheel_separation_distance', 0.14)
+		self.R = rospy.get_param('~wheel_radius', 0.1)
+		self.L = rospy.get_param('~wheel_separation_distance', 0.32)
 		self.rate = rospy.get_param('~rate', 50)
-		self.N = rospy.get_param('~robot_wheel_ticks', 13)
 		self.frame_id = rospy.get_param('~frame_id','/odom')
-		self.child_frame_id = rospy.get_param('~child_frame_id','/base_link')
+		self.child_frame_id = rospy.get_param('~child_frame_id','/base_footprint')
 
 		self.tf_broadcaster = tf.TransformBroadcaster()
-
-		self.lwheel_angular_vel_enc = 0;
-		self.rwheel_angular_vel_enc = 0;
+		self.lwheel_angular_vel_enc = 0
+		self.rwheel_angular_vel_enc = 0
 		self.pose = {'x':0, 'y': 0, 'th': 0}
 		self.time_prev_update = rospy.Time.now()
 
@@ -50,14 +45,12 @@ class OdomPublisher(object):
 		dt = (time_curr_update - self.time_prev_update).to_sec()
 		self.time_prev_update = time_curr_update
 
-		# Special case where just moving straight
 		if rwheel_tangent_vel_enc == lwheel_tangent_vel_enc:
 			v = (lwheel_tangent_vel_enc + rwheel_tangent_vel_enc) / 2.0
 			w = 0
 			x = x + v*dt*numpy.cos(th)
 			y = y + v*dt*numpy.sin(th)
 		else:
-			# Compute the instantaneous center of curvature
 			v = (lwheel_tangent_vel_enc + rwheel_tangent_vel_enc) / 2.0
 			w = (rwheel_tangent_vel_enc - lwheel_tangent_vel_enc) / self.L
 			R = ( self.L / 2.0 ) * (lwheel_tangent_vel_enc + rwheel_tangent_vel_enc) / (rwheel_tangent_vel_enc - lwheel_tangent_vel_enc)

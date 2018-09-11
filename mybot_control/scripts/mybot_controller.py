@@ -1,36 +1,38 @@
 #!/usr/bin/python
 import rospy
 import roslib
-from std_msgs.msg import Float32, String
+from std_msgs.msg import Float32, String, Int32
 import json
 from dynamic_reconfigure.server import Server
 import mybot_control.cfg.ParamConfig as ConfigType
+
+
 class ControlsToMotors:
     def __init__(self):
         rospy.init_node('mybot_controller')
         self.dyn_reconf_server = Server(ConfigType, self.reconfigure)
         self.rate = rospy.get_param('~rate', 50)
-        self.Kp = 2.0
+        self.Kp = 0
         self.Ki = 0.0
-        self.Kd = 0.0
+        self.Kd = 0
 
         # approx 5.34 rad / s when motor_cmd = 255
         self.motor_max_angular_vel = rospy.get_param('~motor_max_angular_vel', 3.97)
-        self.motor_min_angular_vel = rospy.get_param('~motor_min_angular_vel', 0)
+        self.motor_min_angular_vel = rospy.get_param('~motor_min_angular_vel', 1.41)
 
         self.wheel_radius = rospy.get_param('~wheel_radius', 0.1)
 
         # Corresponding motor commands
-        self.motor_cmd_max = rospy.get_param('~motor_cmd_max', 1.0)
-        self.motor_cmd_min = rospy.get_param('~motor_cmd_min', 0.0)
+        self.motor_cmd_max = rospy.get_param('~motor_cmd_max', 255)
+        self.motor_cmd_min = rospy.get_param('~motor_cmd_min', 100)
 
         # # Publish the computed angular velocity motor command
         # self.lwheel_angular_vel_motor_pub = rospy.Publisher('lwheel_angular_vel_motor', Float32, queue_size=10)
         # self.rwheel_angular_vel_motor_pub = rospy.Publisher('rwheel_angular_vel_motor', Float32, queue_size=10)
 
         # Publish motor command
-        self.lwheel_motor_cmd_pub = rospy.Publisher('lwheel_motor_cmd_pub', Float32, queue_size=10)
-        self.rwheel_motor_cmd_pub = rospy.Publisher('rwheel_motor_cmd_pub', Float32, queue_size=10)
+        self.lwheel_motor_cmd_pub = rospy.Publisher('lwheel_motor_cmd_pub', Int32, queue_size=10)
+        self.rwheel_motor_cmd_pub = rospy.Publisher('rwheel_motor_cmd_pub', Int32, queue_size=10)
 
         self.param_pid = rospy.Subscriber('param_pid', String, self.param_pid_callback)
 
@@ -127,15 +129,16 @@ class ControlsToMotors:
         wheel_pid['dt'] = (wheel_pid['time_curr'] - wheel_pid['time_prev']).to_sec()
         if wheel_pid['dt'] == 0: return 0
 
+        wheel_pid['error_curr'] = target - state
         wheel_pid['integral'] = wheel_pid['integral'][1:] + [(wheel_pid['error_curr'] * wheel_pid['dt'])]
         wheel_pid['derivative'] = (wheel_pid['error_curr'] - wheel_pid['error_prev']) / wheel_pid['dt']
         wheel_pid['error_prev'] = wheel_pid['error_curr']
         control_signal = (
-                    self.Kp * wheel_pid['error_curr'] + self.Ki * sum(wheel_pid['integral']) + self.Kd * wheel_pid[
-                'derivative'])
+                self.Kp * wheel_pid['error_curr'] + self.Ki * sum(wheel_pid['integral']) + self.Kd * wheel_pid[
+            'derivative'])
         # print(self.Kp)
+        #print(wheel_pid['error_curr'])
         target_new = target + control_signal
-
         if target > 0 and target_new < 0: target_new = target
         if target < 0 and target_new > 0: target_new = target
 
@@ -169,8 +172,6 @@ class ControlsToMotors:
     def lwheelUpdate(self):
         # Compute target angular velocity
         self.lwheel_angular_vel_target = self.tangentVelToAngularVel(self.lwheel_tangent_vel_target)
-
-        # If we want to adjust target angular velocity using PID controller to incorporate encoder readings
         self.lwheel_angular_vel_target = self.pidControl(self.lwheel_pid, self.lwheel_angular_vel_target,
                                                          self.lwheel_angular_vel_enc)
 
@@ -178,27 +179,14 @@ class ControlsToMotors:
         lwheel_motor_cmd = self.angularVelToMotorCmd(self.lwheel_angular_vel_target)
         self.lwheel_motor_cmd_pub.publish(lwheel_motor_cmd)
 
-    # # Send motor command
-    # self.motorCmdToRobot('left',lwheel_motor_cmd)
-
     def rwheelUpdate(self):
         # Compute target angular velocity
         self.rwheel_angular_vel_target = self.tangentVelToAngularVel(self.rwheel_tangent_vel_target)
-        # self.rwheel_angular_vel_target_pub.publish(self.rwheel_angular_vel_target)
-
-        # If we want to adjust target angular velocity using PID controller to incorporate encoder readings
         self.rwheel_angular_vel_target = self.pidControl(self.rwheel_pid, self.rwheel_angular_vel_target,
                                                          self.rwheel_angular_vel_enc)
-        # self.rwheel_angular_vel_control_pub.publish(self.rwheel_angular_vel_target)
-
         # Compute motor command
         rwheel_motor_cmd = self.angularVelToMotorCmd(self.rwheel_angular_vel_target)
         self.rwheel_motor_cmd_pub.publish(rwheel_motor_cmd)
-
-    # # Send motor command
-    # self.motorCmdToRobot('right',rwheel_motor_cmd)
-
-    # When given no commands for some time, do not move
 
     def reconfigure(self, config, level):
         self.Kp = config.kp

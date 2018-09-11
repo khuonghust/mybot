@@ -3,7 +3,7 @@
     name="model" />
   <arg
     name="gui"
-    default="true" />
+    default="false" />
   <param
     name="robot_description"
     textfile="$(find mybot_description)/urdf/mybot.xacro" />
@@ -23,4 +23,5 @@
     pkg="rviz"
     type="rviz"
     args="-d $(find mybot_description)/urdf.rviz" />
+    <node pkg="mybot_description" type="camera_link_transform" name="camera_link_transform"/>
 </launch>
